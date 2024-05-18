@@ -2,11 +2,14 @@ package com.example.testtaskkonus.service.impl;
 
 import com.example.testtaskkonus.domain.Author;
 import com.example.testtaskkonus.dto.request.AddAuthorRequest;
+import com.example.testtaskkonus.dto.request.ChangeAuthorRequest;
 import com.example.testtaskkonus.dto.response.AuthorResponse;
 import com.example.testtaskkonus.exception.AuthorNotFoundException;
 import com.example.testtaskkonus.repository.AuthorRepository;
 import com.example.testtaskkonus.service.AuthorService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AuthorServiceImpl implements AuthorService {
@@ -39,5 +42,33 @@ public class AuthorServiceImpl implements AuthorService {
     public void deleteAuthor(Long id) {
         Author author = authorRepository.findById(id).orElseThrow(() -> new AuthorNotFoundException(id));
         authorRepository.delete(author);
+    }
+
+    @Override
+    public AuthorResponse changeAuthor(ChangeAuthorRequest changeAuthorRequest, Long id) {
+        Author authorToUpdate = authorRepository.findById(id)
+                .orElseThrow(() -> new AuthorNotFoundException(id));
+        authorToUpdate.setLastName(changeAuthorRequest.getLastName());
+        authorToUpdate.setFirstName(changeAuthorRequest.getFirstName());
+        authorToUpdate.setPatronymic(changeAuthorRequest.getPatronymic());
+        authorToUpdate.setBirthday(changeAuthorRequest.getBirthday());
+        authorRepository.save(authorToUpdate);
+        return AuthorResponse.builder()
+                .id(authorToUpdate.getId())
+                .lastName(authorToUpdate.getLastName())
+                .firstName(authorToUpdate.getFirstName())
+                .patronymic(authorToUpdate.getPatronymic())
+                .birthday(authorToUpdate.getBirthday())
+                .build();
+    }
+
+
+    @Override
+    public List<AuthorResponse> getAllAuthors() {
+        List<Author> author = authorRepository.findAll();
+        return author.stream().map(currentAuthor -> new AuthorResponse(
+                currentAuthor.getId(), currentAuthor.getLastName(),
+                currentAuthor.getFirstName(), currentAuthor.getPatronymic(),
+                currentAuthor.getBirthday())).toList();
     }
 }
