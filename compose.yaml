@@ -1,9 +1,36 @@
 services:
-  postgres:
-    image: 'postgres:latest'
-    environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+  postgresql:
+    image: 'postgres:16'
     ports:
-      - '5432'
+      - "127.0.0.1:5435:5432"
+    environment:
+      POSTGRES_DB: library
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgresql:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  app:
+    restart: always
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgresql
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/library"
+      POSTGRES_DB: library
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    expose:
+      - "8080"
+    networks:
+      - backend
+
+volumes:
+  postgresql: { }
+
+networks:
+  backend: { }
