@@ -19,7 +19,10 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany(mappedBy = "books")
+    @ManyToMany
+    @JoinTable(name = "author_book",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "author_id"))
     private List<Author> authors;
 
     private String title;
@@ -29,4 +32,18 @@ public class Book {
     private Integer yearOfPublishing;
 
     private Integer numberOfPages;
+
+    public boolean isAuthorAlreadyConnected(Author author) {
+        return authors.contains(author);
+    }
+
+    public void addAuthor(Author author) {
+        authors.add(author);
+        author.getBooks().add(this);
+    }
+
+    public void removeAuthor(Author author) {
+        authors.remove(author);
+        author.getBooks().remove(this);
+    }
 }
