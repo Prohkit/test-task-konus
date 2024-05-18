@@ -1,6 +1,9 @@
 package com.example.testtaskkonus.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -8,13 +11,15 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
+@AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Builder
 @Table(name = "author")
 public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long Id;
+    private Long id;
 
     @ManyToMany
     @JoinTable(name = "author_book",
@@ -28,5 +33,6 @@ public class Author {
 
     private String patronymic;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
 }
