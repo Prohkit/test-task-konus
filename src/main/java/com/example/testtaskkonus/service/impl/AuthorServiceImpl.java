@@ -48,10 +48,7 @@ public class AuthorServiceImpl implements AuthorService {
     public AuthorResponse changeAuthor(ChangeAuthorRequest changeAuthorRequest, Long id) {
         Author authorToUpdate = authorRepository.findById(id)
                 .orElseThrow(() -> new AuthorNotFoundException(id));
-        authorToUpdate.setLastName(changeAuthorRequest.getLastName());
-        authorToUpdate.setFirstName(changeAuthorRequest.getFirstName());
-        authorToUpdate.setPatronymic(changeAuthorRequest.getPatronymic());
-        authorToUpdate.setBirthday(changeAuthorRequest.getBirthday());
+        setAuthorFieldsIfNotNull(authorToUpdate, changeAuthorRequest);
         authorRepository.save(authorToUpdate);
         return AuthorResponse.builder()
                 .id(authorToUpdate.getId())
@@ -62,6 +59,20 @@ public class AuthorServiceImpl implements AuthorService {
                 .build();
     }
 
+    private void setAuthorFieldsIfNotNull(Author authorToUpdate, ChangeAuthorRequest changeAuthorRequest) {
+        if (changeAuthorRequest.getLastName() != null) {
+            authorToUpdate.setLastName(changeAuthorRequest.getLastName());
+        }
+        if (changeAuthorRequest.getFirstName() != null) {
+            authorToUpdate.setFirstName(changeAuthorRequest.getFirstName());
+        }
+        if (changeAuthorRequest.getPatronymic() != null) {
+            authorToUpdate.setPatronymic(changeAuthorRequest.getPatronymic());
+        }
+        if (changeAuthorRequest.getBirthday() != null) {
+            authorToUpdate.setBirthday(changeAuthorRequest.getBirthday());
+        }
+    }
 
     @Override
     public List<AuthorResponse> getAllAuthors() {
