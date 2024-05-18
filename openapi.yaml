@@ -1,0 +1,337 @@
+openapi: "3.0.3"
+info:
+  title: "test_task_konus API"
+  description: "test_task_konus API"
+  version: "1.0.0"
+servers:
+  - url: "https://test_task_konus"
+paths:
+  /books:
+    post:
+      summary: "POST books"
+      operationId: "addBook"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddBookRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookResponse"
+  /books/filtered/author/{id}:
+    get:
+      summary: "GET books/filtered/author/{id}"
+      operationId: "getBooksFilteredByTitle"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  {
+                    $ref: "#/components/schemas/BookResponse"
+                  }
+  /books/filtered/isnb/{isnb}:
+    get:
+      summary: "GET books/filtered/isnb/{isnb}"
+      operationId: "getBooksFilteredByIsnb"
+      parameters:
+        - name: "isnb"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookResponse"
+  /books/filtered/title/{title}:
+    get:
+      summary: "GET books/filtered/title/{title}"
+      operationId: "getBooksFilteredByTitle"
+      parameters:
+        - name: "title"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  {
+                    $ref: "#/components/schemas/BookResponse"
+                  }
+  /books/{id}:
+    patch:
+      summary: "PATCH books/{id}"
+      operationId: "changeBookDetails"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeBookRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookResponse"
+    delete:
+      summary: "DELETE books/{id}"
+      operationId: "deleteBook"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+  /books/{id}/authors/add:
+    put:
+      summary: "PUT books/{id}/authors/add"
+      operationId: "addAuthorsToBook"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddAuthorsToBookRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookResponse"
+  /books/{id}/authors/remove:
+    put:
+      summary: "PUT books/{id}/authors/remove"
+      operationId: "removeAuthorsFromBook"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RemoveAuthorsFromBookRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BookResponse"
+  /authors:
+    get:
+      summary: "GET authors"
+      operationId: "getAllAuthors"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  {
+                    $ref: "#/components/schemas/AuthorResponse"
+                  }
+    post:
+      summary: "POST authors"
+      operationId: "addAuthor"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddAuthorRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthorResponse"
+  /authors/{id}:
+    patch:
+      summary: "PATCH authors/{id}"
+      operationId: "changeAuthorDetails"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeAuthorRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthorResponse"
+    delete:
+      summary: "DELETE authors/{id}"
+      operationId: "deleteAuthor"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+
+components:
+  schemas:
+    AddAuthorRequest:
+      type: object
+      properties:
+        lastName:
+          type: string
+        firstname:
+          type: string
+        patronymic:
+          type: string
+        birthday:
+          type: object
+    AddAuthorsToBookRequest:
+      type: object
+      properties:
+        authorIds:
+          type: array
+          items: {
+            type: integer,
+            format: int64
+          }
+    AddBookRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        authorIds:
+          type: array
+          items: {
+            type: integer,
+            format: int64
+          }
+        isbn:
+          type: string
+        yearOfPublishing:
+          type: string
+        numberOfPages:
+          type: string
+    ChangeAuthorRequest:
+      type: object
+      properties:
+        lastName:
+          type: string
+        firstName:
+          type: string
+        patronymic:
+          type: string
+        birthday:
+          type: object
+    ChangeBookRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        isbn:
+          type: string
+        yearOfPublishing:
+          type: string
+        numberOfPages:
+          type: string
+    RemoveAuthorsFromBookRequest:
+      type: object
+      properties:
+        authorIds:
+          type: array
+          items: {
+            type: integer,
+            format: int64
+          }
+    AuthorResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        lastName:
+          type: string
+        firstName:
+          type: string
+        patronymic:
+          type: string
+        birthday:
+          type: object
+    BookResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        isbn:
+          type: string
+        yearOfPublishing:
+          type: string
+        numberOfPages:
+          type: string
