@@ -9,6 +9,7 @@ import com.example.testtaskkonus.repository.AuthorRepository;
 import com.example.testtaskkonus.service.AuthorService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -40,14 +41,13 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public void deleteAuthor(Long id) {
-        Author author = authorRepository.findById(id).orElseThrow(() -> new AuthorNotFoundException(id));
+        Author author = getAuthorById(id);
         authorRepository.delete(author);
     }
 
     @Override
     public AuthorResponse changeAuthor(ChangeAuthorRequest changeAuthorRequest, Long id) {
-        Author authorToUpdate = authorRepository.findById(id)
-                .orElseThrow(() -> new AuthorNotFoundException(id));
+        Author authorToUpdate = getAuthorById(id);
         setAuthorFieldsIfNotNull(authorToUpdate, changeAuthorRequest);
         authorRepository.save(authorToUpdate);
         return AuthorResponse.builder()
@@ -77,9 +77,23 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public List<AuthorResponse> getAllAuthors() {
         List<Author> author = authorRepository.findAll();
-        return author.stream().map(currentAuthor -> new AuthorResponse(
-                currentAuthor.getId(), currentAuthor.getLastName(),
-                currentAuthor.getFirstName(), currentAuthor.getPatronymic(),
-                currentAuthor.getBirthday())).toList();
+        return author.stream().map(a -> new AuthorResponse(
+                a.getId(), a.getLastName(),
+                a.getFirstName(), a.getPatronymic(),
+                a.getBirthday())).toList();
+    }
+
+    @Override
+    public Author getAuthorById(Long id) {
+        return authorRepository.findById(id).orElseThrow(() -> new AuthorNotFoundException(id));
+    }
+
+    @Override
+    public List<Author> getAuthorsByIds(List<Long> ids) {
+        List<Author> authors = new ArrayList<>();
+        for (Long id : ids) {
+            authors.add(getAuthorById(id));
+        }
+        return authors;
     }
 }

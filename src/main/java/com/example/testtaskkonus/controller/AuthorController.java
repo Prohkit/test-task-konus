@@ -24,7 +24,7 @@ public class AuthorController {
     @PostMapping
     public ResponseEntity<AuthorResponse> addAuthor(@RequestBody @Validated AddAuthorRequest addAuthorRequest) {
         AuthorResponse authorResponse = authorService.addAuthor(addAuthorRequest);
-        return new ResponseEntity<>(authorResponse, HttpStatus.OK);
+        return new ResponseEntity<>(authorResponse, HttpStatus.CREATED);
     }
 
     @DeleteMapping("{id}")
@@ -33,7 +33,7 @@ public class AuthorController {
         authorService.deleteAuthor(id);
     }
 
-    @PatchMapping("change/{id}")
+    @PatchMapping("{id}")
     public ResponseEntity<AuthorResponse> changeAuthorDetails(@RequestBody ChangeAuthorRequest changeAuthorRequest,
                                                               @PathVariable Long id) {
         AuthorResponse authorResponse = authorService.changeAuthor(changeAuthorRequest, id);
