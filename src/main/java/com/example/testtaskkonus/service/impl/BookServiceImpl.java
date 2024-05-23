@@ -7,37 +7,37 @@ import com.example.testtaskkonus.dto.request.ChangeBookRequest;
 import com.example.testtaskkonus.dto.response.BookResponse;
 import com.example.testtaskkonus.exception.AuthorIsAlreadyConnectedToBookException;
 import com.example.testtaskkonus.exception.BookNotFoundException;
+import com.example.testtaskkonus.mapper.BookMapper;
 import com.example.testtaskkonus.repository.BookRepository;
 import com.example.testtaskkonus.service.BookService;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
 
-    public BookServiceImpl(BookRepository bookRepository) {
+    private final BookMapper bookMapper;
+
+    public BookServiceImpl(BookRepository bookRepository, BookMapper bookMapper) {
         this.bookRepository = bookRepository;
+        this.bookMapper = bookMapper;
     }
 
     @Override
     public BookResponse addBook(AddBookRequest addBookRequest, List<Author> authors) {
-        Book bookToAdd = Book.builder()
-                .title(addBookRequest.getTitle())
-                .authors(new ArrayList<>())
-                .isbn(addBookRequest.getIsbn())
-                .yearOfPublishing(addBookRequest.getYearOfPublishing())
-                .numberOfPages(addBookRequest.getNumberOfPages())
-                .build();
+        Book bookToAdd = bookMapper.addBookRequestToBook(addBookRequest);
         for (Author author : authors) {
             bookToAdd.addAuthor(author);
         }
         Book book = bookRepository.save(bookToAdd);
 
-        return createBookResponseFromBook(book);
+        return bookMapper.toBookResponse(book);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class BookServiceImpl implements BookService {
         Book bookToUpdate = getBookById(bookId);
         setBookFieldsIfNotNull(bookToUpdate, changeBookRequest);
         bookRepository.save(bookToUpdate);
-        return createBookResponseFromBook(bookToUpdate);
+        return bookMapper.toBookResponse(bookToUpdate);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class BookServiceImpl implements BookService {
             book.addAuthor(author);
         }
         Book toBookResponse = bookRepository.save(book);
-        return createBookResponseFromBook(toBookResponse);
+        return bookMapper.toBookResponse(toBookResponse);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class BookServiceImpl implements BookService {
             book.removeAuthor(author);
         }
         Book toBookResponse = bookRepository.save(book);
-        return createBookResponseFromBook(toBookResponse);
+        return bookMapper.toBookResponse(toBookResponse);
     }
 
     private void setBookFieldsIfNotNull(Book book, ChangeBookRequest changeBookRequest) {
@@ -97,39 +97,49 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public List<BookResponse> getBooksFilteredByTitleIsbnAuthor(String title, String isbn, Long authorId) {
+        if (title == null && isbn == null && authorId == null) {
+            return new ArrayList<>();
+        }
+        List<Book> books = bookRepository.findAll((root, query, cb) -> {
+            Predicate conjunction = cb.conjunction();
+            if (Objects.nonNull(title)) {
+                Predicate like = cb.like(cb.upper(root.get("title")), "%" + title.toUpperCase() + "%");
+                conjunction = cb.and(conjunction, like);
+            }
+            if (Objects.nonNull(isbn)) {
+                Predicate like = cb.like(cb.upper(root.get("isbn")), "%" + isbn.toUpperCase() + "%");
+                conjunction = cb.and(conjunction, like);
+            }
+            if (Objects.nonNull(authorId)) {
+                Predicate equal = cb.equal(root.get("authorId"), authorId);
+                conjunction = cb.and(conjunction, equal);
+            }
+            return conjunction;
+        });
+        return bookMapper.toBookResponseList(books);
+    }
+
+    @Override
     public List<BookResponse> getBooksFilteredByTitle(String title) {
-        List<Book> books = bookRepository.findBooksByTitle(title);
-        return books.stream().map(book -> new BookResponse(
-                book.getId(), book.getTitle(), book.getIsbn(),
-                book.getYearOfPublishing(), book.getNumberOfPages())).toList();
+        List<Book> books = bookRepository.findBooksByTitleIgnoreCase(title);
+        return bookMapper.toBookResponseList(books);
     }
 
     @Override
     public BookResponse getBooksFilteredByIsbn(String isbn) {
-        Book book = bookRepository.findBookByIsbn(isbn);
-        return createBookResponseFromBook(book);
+        Book book = bookRepository.findBookByIsbnIgnoreCase(isbn);
+        return bookMapper.toBookResponse(book);
     }
 
     @Override
     public List<BookResponse> getBooksFilteredByAuthor(Author author) {
         List<Book> books = bookRepository.findBooksByAuthors(List.of(author));
-        return books.stream().map(book -> new BookResponse(
-                book.getId(), book.getTitle(), book.getIsbn(),
-                book.getYearOfPublishing(), book.getNumberOfPages())).toList();
+        return bookMapper.toBookResponseList(books);
     }
 
     @Override
     public Book getBookById(Long id) {
         return bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(id));
-    }
-
-    private BookResponse createBookResponseFromBook(Book book) {
-        return BookResponse.builder()
-                .id(book.getId())
-                .title(book.getTitle())
-                .isbn(book.getIsbn())
-                .yearOfPublishing(book.getYearOfPublishing())
-                .numberOfPages(book.getNumberOfPages())
-                .build();
     }
 }

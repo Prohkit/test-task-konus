@@ -5,6 +5,7 @@ import com.example.testtaskkonus.dto.request.AddAuthorRequest;
 import com.example.testtaskkonus.dto.request.ChangeAuthorRequest;
 import com.example.testtaskkonus.dto.response.AuthorResponse;
 import com.example.testtaskkonus.exception.AuthorNotFoundException;
+import com.example.testtaskkonus.mapper.AuthorMapper;
 import com.example.testtaskkonus.repository.AuthorRepository;
 import com.example.testtaskkonus.service.AuthorService;
 import org.springframework.stereotype.Service;
@@ -17,26 +18,18 @@ public class AuthorServiceImpl implements AuthorService {
 
     private final AuthorRepository authorRepository;
 
-    public AuthorServiceImpl(AuthorRepository authorRepository) {
+    private final AuthorMapper authorMapper;
+
+    public AuthorServiceImpl(AuthorRepository authorRepository, AuthorMapper authorMapper) {
         this.authorRepository = authorRepository;
+        this.authorMapper = authorMapper;
     }
 
     @Override
     public AuthorResponse addAuthor(AddAuthorRequest addAuthorRequest) {
-        Author authorToAdd = Author.builder()
-                .lastName(addAuthorRequest.getLastName())
-                .firstName(addAuthorRequest.getFirstName())
-                .patronymic(addAuthorRequest.getPatronymic())
-                .birthday(addAuthorRequest.getBirthday())
-                .build();
+        Author authorToAdd = authorMapper.addAuthorRequestToAuthor(addAuthorRequest);
         Author author = authorRepository.save(authorToAdd);
-        return AuthorResponse.builder()
-                .id(author.getId())
-                .lastName(author.getLastName())
-                .firstName(author.getFirstName())
-                .patronymic(author.getPatronymic())
-                .birthday(author.getBirthday())
-                .build();
+        return authorMapper.toAuthorResponse(author);
     }
 
     @Override
@@ -50,13 +43,7 @@ public class AuthorServiceImpl implements AuthorService {
         Author authorToUpdate = getAuthorById(id);
         setAuthorFieldsIfNotNull(authorToUpdate, changeAuthorRequest);
         authorRepository.save(authorToUpdate);
-        return AuthorResponse.builder()
-                .id(authorToUpdate.getId())
-                .lastName(authorToUpdate.getLastName())
-                .firstName(authorToUpdate.getFirstName())
-                .patronymic(authorToUpdate.getPatronymic())
-                .birthday(authorToUpdate.getBirthday())
-                .build();
+        return authorMapper.toAuthorResponse(authorToUpdate);
     }
 
     private void setAuthorFieldsIfNotNull(Author authorToUpdate, ChangeAuthorRequest changeAuthorRequest) {
@@ -77,10 +64,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public List<AuthorResponse> getAllAuthors() {
         List<Author> author = authorRepository.findAll();
-        return author.stream().map(a -> new AuthorResponse(
-                a.getId(), a.getLastName(),
-                a.getFirstName(), a.getPatronymic(),
-                a.getBirthday())).toList();
+        return authorMapper.toAuthorResponseList(author);
     }
 
     @Override

@@ -26,4 +26,6 @@ public interface BookService {
     BookResponse getBooksFilteredByIsbn(String isbn);
 
     List<BookResponse> getBooksFilteredByAuthor(Author author);
+
+    List<BookResponse> getBooksFilteredByTitleIsbnAuthor(String title, String isbn, Long authorId);
 }

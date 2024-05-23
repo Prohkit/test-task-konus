@@ -62,10 +62,18 @@ public class BookController {
 
     @PutMapping("{id}/authors/remove")
     public ResponseEntity<BookResponse> removeAuthorsFromBook(@RequestBody RemoveAuthorsFromBookRequest request,
-                                                         @PathVariable Long id) {
+                                                              @PathVariable Long id) {
         List<Author> authors = authorService.getAuthorsByIds(request.getAuthorIds());
         BookResponse bookResponse = bookService.removeAuthorsFromBook(id, authors);
         return new ResponseEntity<>(bookResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/filtered")
+    public ResponseEntity<List<BookResponse>> getBooksFilteredByTitleIsbnAuthor(@RequestParam(required = false) String title,
+                                                                                @RequestParam(required = false) String isbn,
+                                                                                @RequestParam(required = false) Long author) {
+        List<BookResponse> bookResponses = bookService.getBooksFilteredByTitleIsbnAuthor(title, isbn, author);
+        return new ResponseEntity<>(bookResponses, HttpStatus.OK);
     }
 
     @GetMapping("/filtered/title/{title}")
